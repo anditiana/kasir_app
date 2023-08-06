@@ -10,5 +10,9 @@ router.post('/login',vLogin ,userController.login);
 router.patch('/transaction', transController.checkOut);
 router.get('/products', userController.getProducts);
 router.get('/categories', userController.getCategories);
+router.put('/cart',userController.setToCart);
+router.get('/cart', userController.checkCart);
+router.put('/cart/:id', userController.editCart);
+router.get('/getCart', userController.getCart);
 
 module.exports = router;

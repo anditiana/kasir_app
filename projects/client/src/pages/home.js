@@ -1,36 +1,65 @@
-import React, { useEffect, useState } from "react";
-import { Col, Container, Row } from "react-bootstrap";
-import {ItemCard, ListCategories, NavbarComponents, ResultComponents} from "../components"
+import React, { Component, useEffect, useState } from "react";
+import { Col, Container, Pagination, Row } from "react-bootstrap";
+import {ItemCard, ListCategories, NavbarComponents, ResultComp} from "../components"
 import Axios from "axios";
+import swal from 'sweetalert'
 
 const Home = () => {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState([]); //menus
   const [cart, setCart] = useState([]);
   const [category, setCategory] = useState([1]);
-  // const [pickedCat, setPickedCat] 
-  const getProducts = async () =>{
+  const getProducts = async () =>{ 
     try {
       // localhost:8000/api/user/products
       const response = await Axios.get(`http://localhost:8000/api/user/products`);
-      // const response = await Axios.get(`http://localhost:8000/api/user/products?categoryId=${category}`);
       setProducts(response.data.getProducts);
+      getListCart();
     } catch (error) {
       console.log(error);
     }    
   }
-
   //pengerjaan disini
   const addToCart = async (value) => {
-    // console.log("Menu :",value);
     try {
-      const cart = {
-        qty : 1,
-        totalPrice : value.productPrice,
-        value
-      }
+      const checkCart = await Axios.get(`http://localhost:8000/api/user/cart?productId=${value.id}`)
+      
+      if (checkCart.data.isExist === null) {
+        const cart = {
+          qty : 1,
+          totalPrice : value.productPrice,
+          detail : value
+        }
 
-      console.log(cart);
-      // const response = await Axios.post("");
+        const setCart = await Axios.put("http://localhost:8000/api/user/cart", cart)
+        .then(res => {
+          getListCart();
+          swal({
+            title: "Sukses masuk keranjang",
+            text: `${cart.detail.productName} Berhasil ditambah`,
+            icon: "success",
+            button: false,
+            timer : 1500
+          });
+        })
+      }else{
+        const prodId = checkCart.data.isExist.productId;
+        const cart = {
+          qty : Number(checkCart.data.isExist.qty) + 1,
+          totalPrice : Number(value.productPrice) + Number(checkCart.data.isExist.totalPrice) ,
+          detail : value
+        }
+        const setCart = await Axios.put(`http://localhost:8000/api/user/cart/${prodId}`, cart)
+        .then(res =>{
+          getListCart();
+          swal({
+            title: "Sukses masuk keranjang",
+            text: `${cart.detail.productName} Berhasil ditambah`,
+            icon: "success",
+            button: false,
+            timer : 1500
+          });
+        });
+      }
     } catch (error) {
       console.log(error);
     }
@@ -48,9 +77,16 @@ const Home = () => {
     } 
   }
 
+
+  async function getListCart() { //update list cart
+    const getCart = await Axios.get('http://localhost:8000/api/user/getCart');
+    setCart(getCart.data.result)
+  }
+
   useEffect(()=>{
     getProducts();
     addToCart();
+    // fetchDataCart();
   }, []);
   
   function formatRupiah(number) {
@@ -60,7 +96,7 @@ const Home = () => {
   return( 
     <>
     <NavbarComponents />
-    <div className="mt-3">
+    <div className="mt-4">
       <Container fluid>
         <Row>
           <ListCategories 
@@ -83,10 +119,12 @@ const Home = () => {
                 })}
               </Row>
             ):(<p></p>)}
+            
           </Col>
-          <ResultComponents />
+          <ResultComp cart = {cart} />
         </Row>
       </Container>
+
     </div>
  </>
   );

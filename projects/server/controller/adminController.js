@@ -45,7 +45,7 @@ const adminController = {
     try {
       console.log(req.body);
       const {productName, productDesc, productPrice, productQty, categoryId } = req.body;
-      console.log(req.file);
+      
       const {filename} = req.file;
       const addProduct = await product.create({
         productName, productDesc, productImg : filename, productPrice, productQty, categoryId

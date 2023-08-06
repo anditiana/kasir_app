@@ -1,6 +1,7 @@
-import ResultComponents from "./resultComponents";
+import ResultComp from "./resultComponents";
 import ListCategories from "./listCategories";
 import NavbarComponents from "./navbarComponents";
 import ItemCard from "./itemCard";
+import Payment from "./payments";
 
-export {ResultComponents, ListCategories, NavbarComponents, ItemCard};
+export {ListCategories, NavbarComponents, ItemCard, ResultComp, Payment };
