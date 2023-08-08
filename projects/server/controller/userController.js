@@ -3,8 +3,14 @@ const user = db.user;
 const product = db.product;
 const cart = db.cart;
 const category = db.category;
+const trans = db.transaction;
+const transDet = db.transDetail;
 const jwt = require('jsonwebtoken');
 const enc = require('bcrypt');
+const moment = require('moment');
+const { Op, Sequelize } = require('sequelize');
+
+
 const userController = {
   login : async (req, res) => {
     try {
@@ -144,7 +150,78 @@ const userController = {
 
       res.status(400).send(error);
     }
+  },
+  checkOut : async (req, res) => {
+    try {
+      // console.log(req.body);
+      console.log(req.body);
+      const {userId, totalPrice, menus, buyerAmount} = req.body;
+      const invoice = `INV${userId}${moment().format('MMDDYYYYhmmss')}`;
+      const change = buyerAmount - totalPrice;
+      
+      const setTrans = await trans.create({
+        transactionId : invoice,
+        total : totalPrice,
+        cash : buyerAmount,
+        change,
+        userId
+      });
+
+      menus.map((value) =>{
+        const setTransDet = transDet.create({
+          productName : value.productName,
+          productPrice : value.productPrice,
+          productCategory : value.categoryId,
+          totalQty : value.qty,
+          totalPriceItem : value.totalPrice,
+          productId : value.productId,
+          transactionId : invoice,
+          userId
+        });
+      })
+
+      const cleanCart = await cart.destroy({
+        where : {},
+        truncate : true
+      })
+
+      
+      
+      res.status(200).send({
+        status : true,
+        message : 'Checkout Success',
+        setTrans
+      });
+    } catch (error) {
+      res.status(400).send(error);
+    }
+  },
+  findMenus : async (req, res) =>{
+    try {
+      const clause = [];
+      const {key, cat} = req.query;
+      console.log(cat=='');
+      if (!cat == '') {
+        clause.push({categoryId:Number(cat)})
+      }
+
+      clause.push({productName:{[Op.like]: `%${key}%`}})
+      const result = await product.findAll({
+        where : {
+          [Op.and] : clause
+        },
+        limit : 10
+      })
+
+      // console.log(result);
+      res.status(200).send({
+        status : true,
+        message : 'Success',
+        result
+      });
+    } catch (error) {
+      res.status(400).send(error)
+    }
   }
-  
 }
 module.exports = userController;

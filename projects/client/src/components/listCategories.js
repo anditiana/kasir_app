@@ -27,8 +27,8 @@ const ListCategories = (props) => {
   },[]);
 
   return(
-    <Col md={2} mt="2" >
-      <h4><strong>Categories</strong></h4>
+    <Col md={2} className="border py-2 m-2">
+      <h4 ><strong>Category</strong></h4>
       <hr />
       <ListGroup >
         {categories && categories.map((v)=>{

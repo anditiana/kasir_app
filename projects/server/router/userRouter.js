@@ -14,5 +14,7 @@ router.put('/cart',userController.setToCart);
 router.get('/cart', userController.checkCart);
 router.put('/cart/:id', userController.editCart);
 router.get('/getCart', userController.getCart);
+router.post('/checkout', userController.checkOut);
+router.get('/search', userController.findMenus);
 
 module.exports = router;

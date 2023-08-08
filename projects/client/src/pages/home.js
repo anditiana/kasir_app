@@ -1,5 +1,5 @@
-import React, { Component, useEffect, useState } from "react";
-import { Col, Container, Pagination, Row } from "react-bootstrap";
+import React, {useEffect, useState } from "react";
+import { Col, Container, Form, FormControl, InputGroup, Pagination, Row } from "react-bootstrap";
 import {ItemCard, ListCategories, NavbarComponents, ResultComp} from "../components"
 import Axios from "axios";
 import swal from 'sweetalert'
@@ -7,7 +7,8 @@ import swal from 'sweetalert'
 const Home = () => {
   const [products, setProducts] = useState([]); //menus
   const [cart, setCart] = useState([]);
-  const [category, setCategory] = useState([1]);
+  const [category, setCategory] = useState([]);
+  const [search, setSearch] = useState([]);
   const getProducts = async () =>{ 
     try {
       // localhost:8000/api/user/products
@@ -86,13 +87,18 @@ const Home = () => {
   useEffect(()=>{
     getProducts();
     addToCart();
-    // fetchDataCart();
   }, []);
   
   function formatRupiah(number) {
     var formattedRupiah = number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     return `Rp ${formattedRupiah}`;
   }
+  const handleChange = async (event) => {
+    setSearch(event.target.value);
+    const findProduct = await Axios.get(`http://localhost:8000/api/user/search?key=${search}&cat=${category}`)
+    setProducts(findProduct.data.result);
+  }
+
   return( 
     <>
     <NavbarComponents />
@@ -103,9 +109,18 @@ const Home = () => {
             changeCategory = {changeCategory}
             pickedCategory= {category}
           />
-          <Col>
-            <h4><strong>Qyuu's Menu</strong></h4>
-            <hr />
+          <Col className="border py-2 m-2">
+            <InputGroup className="mb-3">
+              <Form.Control
+                placeholder="Search Menu's"
+                aria-label="Search Menu's"
+                aria-describedby="basic-addon2"
+                onChange={handleChange}
+              />
+              <InputGroup.Text id="basic-addon2">Search</InputGroup.Text>
+            </InputGroup>
+
+            
             {products.length > 0 ? (
               <Row xs={1} sm={4} md={3} lg={5} className="g-2">
                 {products.map((value)=>{
